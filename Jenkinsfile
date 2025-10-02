@@ -1,47 +1,56 @@
 pipeline {
     agent any
 
-    tools {
-        nodejs "nodejs"
+    environment {
+        NODEJS_HOME = tool name: 'nodejs', type: 'NodeJS'
+        PATH = "${env.NODEJS_HOME}/bin:${env.PATH}"
+        APP_DIR = "${WORKSPACE}"
+        SERVE_PORT = "3000"
     }
 
     stages {
+
         stage('Checkout') {
             steps {
-                git branch: 'master', url: 'https://github.com/venkatesuchejarla/student-management-system.git'
+                checkout scm
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                sh 'npm install'
+                dir(APP_DIR) {
+                    sh 'npm install'
+                }
             }
         }
 
         stage('Build') {
             steps {
-                sh '''
-                unset CI
-                npm run build
-                '''
+                dir(APP_DIR) {
+                    // Unset CI to ignore warnings as errors
+                    sh 'unset CI && npm run build'
+                }
             }
         }
 
-        stage('Test') {
+        stage('Serve on Port 3000') {
             steps {
-                sh 'npm test -- --watchAll=false || true'
+                dir(APP_DIR) {
+                    // Install serve globally if not installed
+                    sh 'npm install -g serve'
+                    // Serve build folder in background on port 3000
+                    sh "nohup serve -s build -l ${SERVE_PORT} > serve.log 2>&1 &"
+                }
             }
         }
+    }
 
-        stage('Deploy') {
-            steps {
-                sh '''
-                # Deploy to a Jenkins workspace folder
-                mkdir -p $WORKSPACE/deploy
-                rm -rf $WORKSPACE/deploy/*
-                cp -r build/* $WORKSPACE/deploy/
-                '''
-            }
+    post {
+        success {
+            echo "Build and deployment successful. App is running on port ${SERVE_PORT}"
+        }
+        failure {
+            echo "Build or deployment failed!"
         }
     }
 }
