@@ -36,9 +36,10 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh '''
-                mkdir -p /var/www/html
-                rm -rf /var/www/html/*
-                cp -r build/* /var/www/html/
+                # Deploy to a Jenkins workspace folder
+                mkdir -p $WORKSPACE/deploy
+                rm -rf $WORKSPACE/deploy/*
+                cp -r build/* $WORKSPACE/deploy/
                 '''
             }
         }
