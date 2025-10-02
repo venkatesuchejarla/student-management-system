@@ -11,7 +11,8 @@ pipeline {
         stage('Checkout') {
             steps {
                 git branch: 'master', 
-                    url: 'https://github.com/venkatesuchejarla/student-management-system.git'
+                    url: 'https://github.com/venkatesuchejarla/student-management-system.git', 
+                    credentialsId: 'ad4816db-faa3-4ce7-a430-33a4d5f0872b'
             }
         }
 
@@ -48,18 +49,16 @@ pipeline {
         stage('Start React Application') {
             steps {
                 script {
-                    sh """
-                        echo "Starting React app on port $PORT"
-                        # stop any previous instance serving the same folder
-                        pkill -f "serve -s $DEPLOY_DIR" || true
-                        # start React app bound to all network interfaces
-                        nohup npx serve -s $DEPLOY_DIR -l $PORT -H 0.0.0.0 > $WORKSPACE/serve.log 2>&1 &
-                        sleep 2
-                        # detect server IP
-                        SERVER_IP=\$(hostname -I | awk '{print \$1}')
-                        echo "React app should be accessible at: http://\$SERVER_IP:$PORT/"
-                        echo "Check serve logs at $WORKSPACE/serve.log"
-                    """
+                    echo "Starting React app on port $PORT"
+
+                    // Stop any previous serve process on this port
+                    sh "pkill -f 'serve -s $DEPLOY_DIR' || true"
+
+                    // Start the app in background and log output
+                    sh "nohup npx serve -s $DEPLOY_DIR -l $PORT -H 0.0.0.0 > $WORKSPACE/serve.log 2>&1 &"
+
+                    echo "React app should now be accessible at: http://localhost:$PORT/"
+                    echo "Check serve logs at $WORKSPACE/serve.log"
                 }
             }
         }
