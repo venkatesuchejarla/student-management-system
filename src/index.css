@@ -1,8 +1,13 @@
+/* ===========================
+   Global Styles
+=========================== */
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
+  background-color: #f9fafb; /* Light gray background */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -10,4 +15,82 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+/* ===========================
+   TailwindCSS Directives
+=========================== */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===========================
+   Custom Utility Classes
+=========================== */
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #a0aec0;
+  border-radius: 4px;
+}
+
+/* Default link style */
+a {
+  color: #3b82f6; /* Tailwind blue-500 */
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Default button styling */
+button {
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Card default styling */
+.card {
+  @apply bg-white shadow-md rounded p-4;
+}
+
+/* Table default styling */
+.table {
+  @apply w-full border-collapse border border-gray-300;
+}
+
+.table th,
+.table td {
+  @apply border border-gray-300 p-2 text-left;
+}
+
+.table th {
+  @apply bg-gray-100 font-semibold;
+}
+
+/* Alerts */
+.alert {
+  @apply p-3 rounded mb-4;
+}
+
+.alert-success {
+  @apply bg-green-100 text-green-700;
+}
+
+.alert-error {
+  @apply bg-red-100 text-red-700;
 }
