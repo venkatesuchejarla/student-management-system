@@ -11,8 +11,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 git branch: 'master', 
-                    url: 'https://github.com/venkatesuchejarla/student-management-system.git', 
-                    credentialsId: 'ad4816db-faa3-4ce7-a430-33a4d5f0872b'
+                    url: 'https://github.com/venkatesuchejarla/student-management-system.git'
             }
         }
 
@@ -50,11 +49,10 @@ pipeline {
             steps {
                 sh """
                     echo "Starting React app on port $PORT"
-                    # stop any previous instance
-                    pm2 delete student-management-system || true
-                    # start React app with pm2
-                    pm2 start npx --name student-management-system -- serve -s $DEPLOY_DIR -l $PORT
-                    pm2 save
+                    # Stop any previous instance of serve running on this port
+                    pkill -f "serve -s $DEPLOY_DIR" || true
+                    # Start React app in background
+                    nohup npx serve -s $DEPLOY_DIR -l $PORT > $WORKSPACE/serve.log 2>&1 &
                 """
             }
         }
