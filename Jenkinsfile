@@ -2,52 +2,70 @@ pipeline {
     agent any
 
     environment {
+        // NodeJS tool configured in Jenkins Global Tool Config with name 'nodejs'
         NODEJS_HOME = tool name: 'nodejs', type: 'NodeJS'
         PATH = "${env.NODEJS_HOME}/bin:${env.PATH}"
-        APP_DIR = "${WORKSPACE}"
-        SERVE_PORT = "3000"
+        PORT = "3000" // port for npm start if needed
     }
 
     stages {
 
-        stage('Checkout') {
+        stage('Checkout SCM') {
             steps {
-                checkout scm
+                git(
+                    url: 'https://github.com/venkatesuchejarla/student-management-system.git',
+                    branch: 'master',
+                    credentialsId: 'ad4816db-faa3-4ce7-a430-33a4d5f0872b'
+                )
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                dir(APP_DIR) {
-                    sh 'npm install'
-                }
+                sh 'npm install'
             }
         }
 
         stage('Build') {
             steps {
-                dir(APP_DIR) {
-                    // Unset CI to ignore warnings as errors
-                    sh 'unset CI && npm run build'
-                }
+                sh 'unset CI && npm run build'
             }
         }
 
-        stage('Serve on Port 3000') {
+        stage('Test') {
             steps {
-                dir(APP_DIR) {
-                    // Install serve globally if not installed
-                    sh 'npm install -g serve'
-                    // Serve build folder in background on port 3000
-                    sh "nohup serve -s build -l ${SERVE_PORT} > serve.log 2>&1 &"
-                }
+                // Run tests but do not fail the build if tests fail
+                sh 'npm test -- --watchAll=false || true'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                // Deploy inside Jenkins workspace
+                sh '''
+                    mkdir -p ${WORKSPACE}/deploy
+                    rm -rf ${WORKSPACE}/deploy/*
+                    cp -r build/* ${WORKSPACE}/deploy/
+                '''
+                echo "Build deployed to ${WORKSPACE}/deploy folder"
+            }
+        }
+
+        stage('Run') {
+            steps {
+                // Serve React app on port 3000 in background
+                sh '''
+                    npm install -g serve
+                    nohup serve -s build -l $PORT &
+                    echo "React app is running on port $PORT"
+                '''
             }
         }
     }
 
     post {
         success {
-            echo "Build and deployment successful. App is running on port ${SERVE_PORT}"
+            echo "Pipeline finished successfully!"
         }
         failure {
             echo "Build or deployment failed!"
