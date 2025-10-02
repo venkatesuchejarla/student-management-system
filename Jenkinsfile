@@ -12,6 +12,7 @@ pipeline {
             steps {
                 git branch: 'master', 
                     url: 'https://github.com/venkatesuchejarla/student-management-system.git'
+                    // remove credentialsId if your repo is public
             }
         }
 
@@ -49,14 +50,13 @@ pipeline {
             steps {
                 sh """
                     echo "Starting React app on port $PORT"
-                    # Stop any previous instance of serve running on this port
+                    # Stop any existing serve instances
                     pkill -f "serve -s $DEPLOY_DIR" || true
-                    # Start React app in background
-                    nohup npx serve -s $DEPLOY_DIR -l $PORT > $WORKSPACE/serve.log 2>&1 &
+                    # Start React app
+                    nohup npx serve -s $DEPLOY_DIR -l $PORT -H 0.0.0.0 > $WORKSPACE/serve.log 2>&1 &
                 """
             }
         }
-
     }
 
     post {
