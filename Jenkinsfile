@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     tools {
-        nodejs "nodejs"   // Make sure this NodeJS installation is configured in Jenkins
+        nodejs "nodejs"
     }
 
     stages {
@@ -20,7 +20,6 @@ pipeline {
 
         stage('Build') {
             steps {
-                // Prevent React from treating warnings as errors in CI
                 sh '''
                 unset CI
                 npm run build
@@ -30,14 +29,14 @@ pipeline {
 
         stage('Test') {
             steps {
-                sh 'npm test -- --watchAll=false || true'  // Do not fail pipeline if tests fail
+                sh 'npm test -- --watchAll=false || true'
             }
         }
 
         stage('Deploy') {
             steps {
-                // Example: copy build files to /var/www/html (adjust for your server)
                 sh '''
+                mkdir -p /var/www/html
                 rm -rf /var/www/html/*
                 cp -r build/* /var/www/html/
                 '''
