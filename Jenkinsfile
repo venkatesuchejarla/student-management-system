@@ -40,23 +40,22 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    // create deploy folder
                     sh "mkdir -p $DEPLOY_DIR"
-                    // copy build contents
                     sh "cp -r build/* $DEPLOY_DIR/"
                 }
             }
         }
 
-        stage('Start Application') {
+        stage('Start React Application') {
             steps {
-                sh '''
+                sh """
                     echo "Starting React app on port $PORT"
-                    # Stop previous instance if running
-                    pkill -f "serve -s $DEPLOY_DIR" || true
-                    # Start in background using nohup
-                    nohup npx serve -s $DEPLOY_DIR -l $PORT > $DEPLOY_DIR/log.txt 2>&1 &
-                '''
+                    # stop any previous instance
+                    pm2 delete student-management-system || true
+                    # start React app with pm2
+                    pm2 start npx --name student-management-system -- serve -s $DEPLOY_DIR -l $PORT
+                    pm2 save
+                """
             }
         }
 
