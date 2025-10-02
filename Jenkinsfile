@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         PORT = "3000"
+        DEPLOY_DIR = "$WORKSPACE/deploy"
     }
 
     stages {
@@ -40,11 +41,9 @@ pipeline {
             steps {
                 script {
                     // create deploy folder
-                    sh 'mkdir -p $WORKSPACE/deploy'
+                    sh "mkdir -p $DEPLOY_DIR"
                     // copy build contents
-                    sh '''
-                        cp -r build/* $WORKSPACE/deploy/
-                    '''
+                    sh "cp -r build/* $DEPLOY_DIR/"
                 }
             }
         }
@@ -52,8 +51,11 @@ pipeline {
         stage('Start Application') {
             steps {
                 sh '''
-                    echo "Starting application on port $PORT"
-                    npm start &
+                    echo "Starting React app on port $PORT"
+                    # Stop previous instance if running
+                    pkill -f "serve -s $DEPLOY_DIR" || true
+                    # Start in background using nohup
+                    nohup npx serve -s $DEPLOY_DIR -l $PORT > $DEPLOY_DIR/log.txt 2>&1 &
                 '''
             }
         }
